@@ -96,7 +96,7 @@ pipeline {
                     sh """
                     echo 'Creating Docker.zip...'
                     zip -r docker.zip docker
-                    scp -o StrictHostKeyChecking=no -i \${SSH_KEY} docker.zip \${SSH_USER}@\${SERVER_IP}:/root/idirtech
+                    scp -o StrictHostKeyChecking=no -i \${SSH_KEY} docker.zip \${SSH_USER}@\${SERVER_IP}:/root/ace-ms/consul-rest-template
                     """
                 }
             }
