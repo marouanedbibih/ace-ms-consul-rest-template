@@ -1,0 +1,174 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'jdk-21.0.5'
+        maven 'maven-3.8.7'
+    }
+
+    environment {
+        DOCKER_CREDENTIALS_ID = 'docker-marouanedbibih'
+        DOCKER_IMAGE_NAME = 'marouanedbibih/ace-gateway-ms'
+        DOCKER_TAG = 'consul-rest-template'
+
+        // SonarScanner configuration
+        SCANNER_HOME = tool 'sonarqube-scanner'
+
+        // Server configuration
+        SERVER_IP = '174.138.10.240'
+        SSH_USER = 'root' // SSH username
+        SSH_KEY = credentials('project-server')
+    }
+    stages {
+
+        stage("Code Checkout") {
+            steps {
+                git branch: 'main', credentialsId: 'marouane-dbibih-github', url: 'https://github.com/marouanedbibih/ace-ms-consul-rest-template'
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                dir('client') {
+                    sh 'mvn test'
+                }
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
+                dir('client') {
+                    withSonarQubeEnv('sonarqube-marouanedbibih') {
+                        sh """
+                            # Run tests and generate coverage report
+                            mvn clean test jacoco:report
+
+                            # Run the SonarQube scanner
+                            ${SCANNER_HOME}/bin/sonar-scanner \
+                            -Dsonar.projectName=ace-ms-consul-rest-template-gateway \
+                            -Dsonar.projectKey=ace-ms-consul-rest-template-gateway \
+                            -Dsonar.sources=. \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.jacoco.reportPaths=target/site/jacoco/jacoco.xml
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Build JAR') {
+            steps {
+                dir('client') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('client') {
+                    script {
+                        sh """
+                            docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    // Login to Docker Hub (using Jenkins credentials)
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh """
+                            echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin
+                            docker push ${DOCKER_IMAGE_NAME}:${DOCKER_TAG}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Create Docker.zip') {
+            steps {
+                script {
+                    // Create a zip file containing Docker-related files
+                    sh """
+                    echo 'Creating Docker.zip...'
+                    zip -r docker.zip docker
+                    scp -o StrictHostKeyChecking=no -i \${SSH_KEY} docker.zip \${SSH_USER}@\${SERVER_IP}:/root/ace-ms/consul-rest-template
+                    """
+                }
+            }
+        }
+
+        stage('Turn Off Container'){
+            steps {
+                script {
+                    // SSH to the server and deploy
+                    sh """
+                    echo 'Turn Off Container...'
+                    ssh -o StrictHostKeyChecking=no -i \${SSH_KEY} \${SSH_USER}@\${SERVER_IP} << EOF
+                    cd /root/ace-ms/consul-rest-template/docker || exit 1
+                    docker compose down || exit 1
+                    exit
+                    EOF
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Server') {
+            steps {
+                script {
+                        // SSH to the server and deploy
+                        sh """
+                        echo 'Deploying Docker setup...'
+                        ssh -o StrictHostKeyChecking=no -i \${SSH_KEY} \${SSH_USER}@\${SERVER_IP} << EOF
+                        cd /root/ace-ms/consul-rest-template || exit 1
+                        unzip -o docker.zip || exit 1
+                        cd docker || exit 1
+                        docker compose pull || exit 1
+                        docker compose up -d || exit 1
+                        rm -f /root/ace-ms/consul-rest-template/docker.zip
+                        exit
+                        EOF
+                        """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend(
+                channel: '#marouane-dbibih', // Replace with your Slack channel
+                color: 'good',
+                message: "Pipeline Succeeded: ${currentBuild.fullDisplayName} \nView details: ${env.BUILD_URL}\nAPI Url: http://api.rt.consul.marouanedbibih.studio/api/cars"
+            )
+            emailext(
+                subject: "Pipeline Success: ${currentBuild.fullDisplayName}",
+                body: """<p>Good news! The pipeline <b>${currentBuild.fullDisplayName}</b> completed successfully.</p>
+                         <p>View details at: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                         <p>API Url: <a href="http://http://api.rt.consul.marouanedbibih.studio/api/cars">http://api.rt.consul.marouanedbibih.studio/api/cars</a></p>
+                         """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: "marrouane.dbibih@gmail.com",
+            )
+        }
+        failure {
+            slackSend(
+                channel: '#marouane-dbibih', // Replace with your Slack channel
+                color: 'danger',
+                message: "Pipeline Failed: ${currentBuild.fullDisplayName} \nView details: ${env.BUILD_URL}"
+            )
+            emailext(
+                subject: "Pipeline Failed: ${currentBuild.fullDisplayName}",
+                body: """<p>Unfortunately, the pipeline <b>${currentBuild.fullDisplayName}</b> failed.</p>
+                         <p>Check the build logs at: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: "marrouane.dbibih@gmail.com",
+            )
+        }
+    }
+}
