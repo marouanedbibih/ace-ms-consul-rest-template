@@ -3,7 +3,6 @@ services:
   # MySQL service
   mysql:
     image: mysql:latest
-    container_name: ace_ms_cnsl_rt_mysql_cntr
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: database
@@ -18,7 +17,6 @@ services:
       - ace-ms-cnsl-rt-net
   # Consul
   consul:
-    container_name: ace_ms_cnsl_rt_consul
     image: consul:1.15.4
     command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
     ports:
@@ -34,9 +32,6 @@ services:
   # Client service
   client-service:
     image: marouanedbibih/ace-client-ms:consul-rest-template
-    container_name: ace_ms_cnsl_rt_client_service
-    # ports:
-    #   - "8801:8801"
     networks:
       - ace-ms-cnsl-rt-net
     environment:
@@ -47,9 +42,6 @@ services:
   # Car service
   car-service:
     image: marouanedbibih/ace-car-ms:consul-rest-template
-    container_name: ace_ms_cnsl_rt_car_service
-    # ports:
-    #   - "8802:8802"
     networks:
       - ace-ms-cnsl-rt-net
     environment:
@@ -60,7 +52,6 @@ services:
   # Gateway service
   gateway:
     image: marouanedbibih/ace-gateway-ms:consul-rest-template
-    container_name: ace_ms_cnsl_rt_gateway_service
     ports:
       - "7701:8888"
     networks:
