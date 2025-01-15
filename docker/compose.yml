@@ -35,8 +35,8 @@ services:
   client-service:
     image: marouanedbibih/ace-client-ms:consul-rest-template
     container_name: ace_ms_cnsl_rt_client_service
-    # ports:
-    #   - "8801:8801"
+    ports:
+      - "8801:8801"
     networks:
       - ace-ms-cnsl-rt-net
     environment:
@@ -48,8 +48,8 @@ services:
   car-service:
     image: marouanedbibih/ace-car-ms:consul-rest-template
     container_name: ace_ms_cnsl_rt_car_service
-    # ports:
-    #   - "8802:8802"
+    ports:
+      - "8802:8802"
     networks:
       - ace-ms-cnsl-rt-net
     environment:
