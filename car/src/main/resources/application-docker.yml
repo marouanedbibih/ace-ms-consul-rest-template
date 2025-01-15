@@ -5,10 +5,10 @@ spring:
   application:
     name: car-service
   datasource:
-    url: ${DATABASE_URL:jdbc:mysql://mysql:3306/cars_db?createDatabaseIfNotExist=true}
+    url: jdbc:mysql://mysql:3306/cars_db?createDatabaseIfNotExist=true
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DATABASE_USERNAME:user}
-    password: ${DATABASE_PASSWORD:password}
+    username: user
+    password: password
   jpa:
     hibernate:
       ddl-auto: create
@@ -28,11 +28,26 @@ spring:
         format: yaml
         default-context: application
         profile-separator: "-"
+# Actuator configuration
 management:
+  tracing:
+    sampling:
+      probability: 1.0
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: 
+          - health
+          - info
+          - metrics
+          - prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  observations:
+    key-values:
+      application: ${spring.application.name}
 
 logging:
   level:
