@@ -22,8 +22,8 @@ services:
     image: consul:1.15.4
     command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
     ports:
-      - "8500:8500" # Consul HTTP API and Web UI
-      - "8600:8600/udp" # Consul DNS
+      - "8500:8500" 
+      - "8600:8600/udp" 
     environment:
       CONSUL_BIND_INTERFACE: eth0
     volumes:
@@ -35,8 +35,8 @@ services:
   client-service:
     image: marouanedbibih/ace-client-ms:consul-rest-template
     container_name: ace_ms_cnsl_rt_client_service
-    ports:
-      - "8801:8801"
+    # ports:
+    #   - "8801:8801"
     networks:
       - ace-ms-cnsl-rt-net
     environment:
@@ -48,8 +48,8 @@ services:
   car-service:
     image: marouanedbibih/ace-car-ms:consul-rest-template
     container_name: ace_ms_cnsl_rt_car_service
-    ports:
-      - "8802:8802"
+    # ports:
+    #   - "8802:8802"
     networks:
       - ace-ms-cnsl-rt-net
     environment:
@@ -62,7 +62,7 @@ services:
     image: marouanedbibih/ace-gateway-ms:consul-rest-template
     container_name: ace_ms_cnsl_rt_gateway_service
     ports:
-      - "8888:8888"
+      - "7701:8888"
     networks:
       - ace-ms-cnsl-rt-net
     environment:

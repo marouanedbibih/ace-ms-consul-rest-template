@@ -144,13 +144,13 @@ pipeline {
             slackSend(
                 channel: '#marouane-dbibih', // Replace with your Slack channel
                 color: 'good',
-                message: "Pipeline Succeeded: ${currentBuild.fullDisplayName} \nView details: ${env.BUILD_URL}\nAPI Url: http://api.idirtech.marouanedbibih.studio/"
+                message: "Pipeline Succeeded: ${currentBuild.fullDisplayName} \nView details: ${env.BUILD_URL}\nAPI Url: http://api.rt.consul.marouanedbibih.studio/api/cars"
             )
             emailext(
                 subject: "Pipeline Success: ${currentBuild.fullDisplayName}",
                 body: """<p>Good news! The pipeline <b>${currentBuild.fullDisplayName}</b> completed successfully.</p>
                          <p>View details at: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-                         <p>API Url: <a href="http://api.idirtech.marouanedbibih.studio/">http://api.idirtech.marouanedbibih.studio/</a></p>
+                         <p>API Url: <a href="http://http://api.rt.consul.marouanedbibih.studio/api/cars">http://api.rt.consul.marouanedbibih.studio/api/cars</a></p>
                          """,
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                 to: "marrouane.dbibih@gmail.com",
