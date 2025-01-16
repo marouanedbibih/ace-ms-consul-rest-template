@@ -3,7 +3,7 @@ services:
   # MySQL service
   mysql:
     image: mysql:latest
-    container_name: ace_ms_cnsl_rt_mysql_cntr
+    container_name: ace-ms-cnsl-rt-mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: database
@@ -11,15 +11,15 @@ services:
       MYSQL_PASSWORD: password
     volumes:
       - ace_ms_cnsl_rt_mysql_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "3307:3306"
     networks:
       - ace-ms-cnsl-rt-net
   # Consul
   consul:
-    container_name: ace_ms_cnsl_rt_consul
     image: consul:1.15.4
+    container_name: ace-ms-cnsl-rt-consul
     command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
     ports:
       - "8500:8500" 
@@ -34,7 +34,7 @@ services:
   # Client service
   client-service:
     image: marouanedbibih/ace-client-ms:consul-rest-template
-    container_name: ace_ms_cnsl_rt_client_service
+    container_name: ace-ms-cnsl-rt-client
     ports:
       - "8801:8801"
     networks:
@@ -47,7 +47,7 @@ services:
   # Car service
   car-service:
     image: marouanedbibih/ace-car-ms:consul-rest-template
-    container_name: ace_ms_cnsl_rt_car_service
+    container_name: ace-ms-cnsl-rt-car
     ports:
       - "8802:8802"
     networks:
@@ -60,7 +60,7 @@ services:
   # Gateway service
   gateway:
     image: marouanedbibih/ace-api-gateway-ms:consul-rest-template
-    container_name: ace_ms_cnsl_rt_gateway_service
+    container_name: ace-ms-cnsl-rt-gateway
     ports:
       - "8888:8888"
     networks:
