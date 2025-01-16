@@ -62,7 +62,7 @@ services:
     image: marouanedbibih/ace-gateway-ms:consul-rest-template
     container_name: ace_ms_cnsl_rt_gateway_service
     ports:
-      - "7701:8888"
+      - "8888:8888"
     networks:
       - ace-ms-cnsl-rt-net
     environment:
