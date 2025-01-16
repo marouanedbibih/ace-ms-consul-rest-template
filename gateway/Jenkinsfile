@@ -29,14 +29,14 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                dir('client') {
+                dir('gateway') {
                     sh 'mvn test'
                 }
             }
         }
         stage('SonarQube Analysis') {
             steps {
-                dir('client') {
+                dir('gateway') {
                     withSonarQubeEnv('sonarqube-marouanedbibih') {
                         sh """
                             # Run tests and generate coverage report
@@ -59,7 +59,7 @@ pipeline {
 
         stage('Build JAR') {
             steps {
-                dir('client') {
+                dir('gateway') {
                     sh 'mvn clean package'
                 }
             }
@@ -67,7 +67,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                dir('client') {
+                dir('gateway') {
                     script {
                         sh """
                             docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
