@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'docker-marouanedbibih'
-        DOCKER_IMAGE_NAME = 'marouanedbibih/ace-gateway-ms'
+        DOCKER_IMAGE_NAME = 'marouanedbibih/ace-api-gateway-ms'
         DOCKER_TAG = 'consul-rest-template'
 
         // SonarScanner configuration
